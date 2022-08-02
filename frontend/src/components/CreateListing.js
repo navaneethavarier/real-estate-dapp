@@ -2,50 +2,46 @@ import Navbar from "./Navbar";
 import { useState } from "react";
 import { uploadFileToIPFS, uploadJSONToIPFS } from "../pinata";
 import ListingsJson from "../Listings.json";
-import { useLocation } from "react-router";
+// import { useLocation } from "react-router";
+
+const ethers = require("ethers");
 
 export default function CreateListing() {
-  const [formParams, updateFormParams] = useState({
+  const [newListing, setNewListing] = useState({
     name: "",
-    description: "",
-    price: "",
+    desc: "",
+    cost: "",
   });
   const [fileURL, setFileURL] = useState(null);
-  const ethers = require("ethers");
-  const [message, updateMessage] = useState("");
-  const location = useLocation();
+  const [status, setStatus] = useState("");
+  // const location = useLocation();
 
-  //This function uploads the NFT image to IPFS
   async function OnChangeFile(e) {
     var file = e.target.files[0];
-    //check for file extension
     try {
-      //upload the file to IPFS
-      const response = await uploadFileToIPFS(file);
-      if (response.success === true) {
-        console.log("Uploaded image to Pinata: ", response.pinataURL);
-        setFileURL(response.pinataURL);
+      const res = await uploadFileToIPFS(file);
+      if (res.success === true) {
+        console.log("Uploaded image to Pinata: ", res.pinataURL);
+        setFileURL(res.pinataURL);
       }
     } catch (e) {
       console.log("Error during file upload", e);
     }
   }
 
-  //This function uploads the metadata to IPDS
   async function uploadMetadataToIPFS() {
-    const { name, description, price } = formParams;
-    //Make sure that none of the fields are empty
-    if (!name || !description || !price || !fileURL) return;
+    const { name, desc, cost } = newListing;
+
+    if (!name || !desc || !cost || !fileURL) return;
 
     const nftJSON = {
       name,
-      description,
-      price,
+      desc,
+      cost,
       image: fileURL,
     };
 
     try {
-      //upload the metadata JSON to IPFS
       const response = await uploadJSONToIPFS(nftJSON);
       if (response.success === true) {
         console.log("Uploaded JSON to Pinata: ", response);
@@ -59,13 +55,14 @@ export default function CreateListing() {
   async function createListing(e) {
     e.preventDefault();
 
-    //Upload data to IPFS
     try {
       const metadataURL = await uploadMetadataToIPFS();
       //After adding your Hardhat network to your metamask, this code will get providers and signers
       const provider = new ethers.providers.Web3Provider(window.ethereum);
       const signer = provider.getSigner();
-      updateMessage("Please wait.. uploading (upto 5 mins)");
+      setStatus(
+        "Data upload in progress. Please wait, this may take a few minutes"
+      );
 
       //Pull the deployed contract instance
       let contract = new ethers.Contract(
@@ -74,8 +71,7 @@ export default function CreateListing() {
         signer
       );
 
-      //massage the params to be sent to the create NFT request
-      const price = ethers.utils.parseUnits(formParams.price, "ether");
+      const price = ethers.utils.parseUnits(newListing.price, "ether");
       let listingPrice = await contract.getListPrice();
       listingPrice = listingPrice.toString();
 
@@ -86,8 +82,8 @@ export default function CreateListing() {
       await transaction.wait();
 
       alert("Successfully created your listing!");
-      updateMessage("");
-      updateFormParams({ name: "", description: "", price: "" });
+      setStatus(" ");
+      setNewListing({ name: "", description: "", price: "" });
       window.location.replace("/");
     } catch (e) {
       alert("Upload error" + e);
@@ -116,9 +112,9 @@ export default function CreateListing() {
               type="text"
               placeholder="Enter listing title"
               onChange={(e) =>
-                updateFormParams({ ...formParams, name: e.target.value })
+                setNewListing({ ...newListing, name: e.target.value })
               }
-              value={formParams.name}
+              value={newListing.name}
             ></input>
           </div>
           <div className="mb-6">
@@ -135,9 +131,9 @@ export default function CreateListing() {
               id="description"
               type="text"
               placeholder="Enter listing details"
-              value={formParams.description}
+              value={newListing.description}
               onChange={(e) =>
-                updateFormParams({ ...formParams, description: e.target.value })
+                setNewListing({ ...newListing, desc: e.target.value })
               }
             ></textarea>
           </div>
@@ -153,9 +149,9 @@ export default function CreateListing() {
               type="number"
               placeholder="Enter the asking price of the property"
               step="0.01"
-              value={formParams.price}
+              value={newListing.price}
               onChange={(e) =>
-                updateFormParams({ ...formParams, price: e.target.value })
+                setNewListing({ ...newListing, cost: e.target.value })
               }
             ></input>
           </div>
@@ -169,7 +165,7 @@ export default function CreateListing() {
             <input type={"file"} onChange={OnChangeFile}></input>
           </div>
           <br></br>
-          <div className="text-green text-center">{message}</div>
+          <div className="text-green text-center">{status}</div>
           <button
             onClick={createListing}
             className="font-bold mt-10 w-full bg-purple-500 text-white rounded p-2 shadow-lg"

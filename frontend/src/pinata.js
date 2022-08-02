@@ -1,25 +1,24 @@
 //require('dotenv').config();
-const key = process.env.REACT_APP_PINATA_KEY;
-const secret = process.env.REACT_APP_PINATA_SECRET;
+// const key = process.env.REACT_APP_PINATA_KEY;
+// const secret = process.env.REACT_APP_PINATA_SECRET;
 
 const axios = require("axios");
-const FormData = require("form-data");
+const FD = require("form-data");
 
-export const uploadJSONToIPFS = async (JSONBody) => {
-  const url = `https://api.pinata.cloud/pinning/pinJSONToIPFS`;
+export const uploadJSONToIPFS = async (json) => {
+  const URL = `https://api.pinata.cloud/pinning/pinJSONToIPFS`;
 
   return axios
-    .post(url, JSONBody, {
+    .post(URL, json, {
       headers: {
-        pinata_api_key: key,
-        pinata_secret_api_key: secret,
+        pinata_api_key: process.env.REACT_APP_PINATA_KEY,
+        pinata_secret_api_key: process.env.REACT_APP_PINATA_SECRET,
       },
     })
-    .then(function (response) {
+    .then((res) => {
       return {
         success: true,
-        pinataURL:
-          "https://gateway.pinata.cloud/ipfs/" + response.data.IpfsHash,
+        pinataURL: "https://gateway.pinata.cloud/ipfs/" + res.data.IpfsHash,
       };
     })
     .catch(function (error) {
@@ -31,11 +30,11 @@ export const uploadJSONToIPFS = async (JSONBody) => {
     });
 };
 
-export const uploadFileToIPFS = async (file) => {
+export const uploadFileToIPFS = async (f) => {
   const url = `https://api.pinata.cloud/pinning/pinFileToIPFS`;
 
-  let data = new FormData();
-  data.append("file", file);
+  let fdata = new FD();
+  fdata.append("file", f);
 
   const metadata = JSON.stringify({
     name: "testname",
@@ -43,48 +42,47 @@ export const uploadFileToIPFS = async (file) => {
       exampleKey: "exampleValue",
     },
   });
-  data.append("pinataMetadata", metadata);
+  fdata.append("pinataMetadata", metadata);
 
   //pinataOptions are optional
-  const pinataOptions = JSON.stringify({
-    cidVersion: 0,
-    customPinPolicy: {
-      regions: [
-        {
-          id: "FRA1",
-          desiredReplicationCount: 1,
-        },
-        {
-          id: "NYC1",
-          desiredReplicationCount: 2,
-        },
-      ],
-    },
-  });
-  data.append("pinataOptions", pinataOptions);
+  // const pinataOptions = JSON.stringify({
+  //   cidVersion: 0,
+  //   customPinPolicy: {
+  //     regions: [
+  //       {
+  //         id: "FRA1",
+  //         desiredReplicationCount: 1,
+  //       },
+  //       {
+  //         id: "NYC1",
+  //         desiredReplicationCount: 2,
+  //       },
+  //     ],
+  //   },
+  // });
+  // data.append("pinataOptions", pinataOptions);
 
   return axios
-    .post(url, data, {
+    .post(url, fdata, {
       maxBodyLength: "Infinity",
       headers: {
-        "Content-Type": `multipart/form-data; boundary=${data._boundary}`,
-        pinata_api_key: key,
-        pinata_secret_api_key: secret,
+        "Content-Type": `multipart/form-data; boundary=${fdata._boundary}`,
+        pinata_api_key: process.env.REACT_APP_PINATA_KEY,
+        pinata_secret_api_key: process.env.REACT_APP_PINATA_SECRET,
       },
     })
-    .then(function (response) {
-      console.log("image uploaded", response.data.IpfsHash);
+    .then((res) => {
+      // console.log("image uploaded", res.data.IpfsHash);
       return {
         success: true,
-        pinataURL:
-          "https://gateway.pinata.cloud/ipfs/" + response.data.IpfsHash,
+        pinataURL: "https://gateway.pinata.cloud/ipfs/" + res.data.IpfsHash,
       };
     })
-    .catch(function (error) {
-      console.log(error);
+    .catch((err) => {
+      console.log(err);
       return {
         success: false,
-        message: error.message,
+        message: err.message,
       };
     });
 };

@@ -13,7 +13,8 @@ function App() {
   return (
     <div className="container">
       <Routes>
-        <Route path="/" element={<Login1 />} />
+        <Route path="/" element={<Listings />} />
+        <Route path="/login" element={<Login1 />} />
         <Route path="/listingdetails" element={<ListingDetails />} />
         <Route path="/account" element={<Account />} />
         <Route path="/createListing" element={<CreateListing />} />

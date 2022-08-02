@@ -58,7 +58,10 @@ export default function Listings() {
             data !== undefined &&
             data !== null &&
             data.map((value, index) => {
-              return <ListingCard data={value} key={index}></ListingCard>;
+              console.log("here111111", value);
+              return (
+                <ListingCard listingsdata={value} key={index}></ListingCard>
+              );
             })}
         </div>
       </div>

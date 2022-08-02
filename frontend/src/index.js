@@ -16,7 +16,8 @@ root.render(
   <React.StrictMode>
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Login1 />} />
+        <Route path="/" element={<Listings />} />
+        <Route path="/login" element={<Login1 />} />
         <Route path="/listingdetails/:tokenId" element={<ListingDetails />} />
         <Route path="/createListing" element={<CreateListing />} />
         <Route path="/account" element={<Account />} />
