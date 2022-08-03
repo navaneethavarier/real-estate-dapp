@@ -1,6 +1,5 @@
 import Navbar from "./Navbar";
-import axie from "../tile.jpeg";
-import { useLocation, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import ListingsJson from "../Listings.json";
 import axios from "axios";
 import { useState } from "react";
@@ -74,6 +73,20 @@ const ListingDetails = (props) => {
     }
   }
 
+  const changePrice = () => {
+    const sp = 0.02;
+    const ethers = require("ethers");
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
+    const signer = provider.getSigner();
+    let contract = new ethers.Contract(
+      ListingsJson.address,
+      ListingsJson.abi,
+      signer
+    );
+
+    // contract.updateListPrice(sp);
+  };
+
   const params = useParams();
   const tokenId = params.tokenId;
   if (!dataFetched) getListingDetails(tokenId);
@@ -89,6 +102,14 @@ const ListingDetails = (props) => {
           <div>
             Price: <span className="">{data.price + " ETH"}</span>
           </div>
+          {currAddress == data.owner ||
+            (currAddress == data.seller && (
+              <button
+              // onClick={changePrice}
+              >
+                Change Price
+              </button>
+            ))}
           <div>
             Owner: <span className="text-sm">{data.owner}</span>
           </div>
