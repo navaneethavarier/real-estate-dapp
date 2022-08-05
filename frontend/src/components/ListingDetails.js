@@ -10,6 +10,8 @@ const ListingDetails = (props) => {
   const [message, updateMessage] = useState("");
   const [currAddress, updateCurrAddress] = useState("0x");
 
+  const [newSP, setNewSP] = useState();
+
   async function getListingDetails(tokenId) {
     const ethers = require("ethers");
     //After adding your Hardhat network to your metamask, this code will get providers and signers
@@ -73,18 +75,35 @@ const ListingDetails = (props) => {
     }
   }
 
-  const changePrice = () => {
-    const sp = 0.02;
-    const ethers = require("ethers");
-    const provider = new ethers.providers.Web3Provider(window.ethereum);
-    const signer = provider.getSigner();
-    let contract = new ethers.Contract(
-      ListingsJson.address,
-      ListingsJson.abi,
-      signer
-    );
+  const changePrice = async (e) => {
+    e.preventDefault();
 
-    // contract.updateListPrice(sp);
+    try {
+      const ethers = require("ethers");
+      // const metadataURL = await uploadMetadataToIPFS();
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const signer = provider.getSigner();
+
+      let contract = new ethers.Contract(
+        ListingsJson.address,
+        ListingsJson.abi,
+        signer
+      );
+
+      // const price = ethers.utils.parseUnits(newListing.price, "ether");
+
+      // let transaction = await contract.createToken(metadataURL, price, {
+      //   value: listingPrice,
+      // });
+      // await transaction.wait();
+
+      // contract.updateListPrice(sp);
+
+      alert("Successfully created your listing!");
+      window.location.replace("/");
+    } catch (e) {
+      alert("Upload error" + e);
+    }
   };
 
   const params = useParams();
@@ -100,16 +119,29 @@ const ListingDetails = (props) => {
           <div>Name: {data.name}</div>
           <div>Description: {data.description}</div>
           <div>
-            Price: <span className="">{data.price + " ETH"}</span>
+            Price :
+            {currAddress == data.owner || currAddress == data.seller ? (
+              <input
+                style={{
+                  backgroundColor: "black",
+                  width: "5em",
+                  marginLeft: "1em",
+                }}
+                defaultValue={data.price}
+                onChange={(e) => {
+                  setNewSP(e.target.value);
+                }}
+              />
+            ) : (
+              <span className="">{data.price + " ETH"}</span>
+            )}{" "}
+            ETH
           </div>
           {currAddress == data.owner ||
             (currAddress == data.seller && (
-              <button
-              // onClick={changePrice}
-              >
-                Change Price
-              </button>
+              <button onClick={changePrice}>Change Price</button>
             ))}
+
           <div>
             Owner: <span className="text-sm">{data.owner}</span>
           </div>
