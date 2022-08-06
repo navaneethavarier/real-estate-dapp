@@ -17,6 +17,7 @@ const ListingDetails = (props) => {
     //After adding your Hardhat network to your metamask, this code will get providers and signers
     const provider = new ethers.providers.Web3Provider(window.ethereum);
     const signer = provider.getSigner();
+
     const addr = await signer.getAddress();
     //Pull the deployed contract instance
     let contract = new ethers.Contract(
@@ -29,21 +30,20 @@ const ListingDetails = (props) => {
     const listedToken = await contract.getListedTokenForId(tokenId);
     let meta = await axios.get(tokenURI);
     meta = meta.data;
-    console.log(listedToken);
+    console.log("META", meta);
 
     let item = {
-      price: meta.price,
+      price: meta.cost || meta.price,
       tokenId: tokenId,
       seller: listedToken.seller,
       owner: listedToken.owner,
       image: meta.image,
       name: meta.name,
-      description: meta.description,
+      description: meta.description || meta.desc,
     };
     console.log(item);
     updateData(item);
     updateDataFetched(true);
-    console.log("address", addr);
     updateCurrAddress(addr);
   }
 
@@ -90,17 +90,16 @@ const ListingDetails = (props) => {
         signer
       );
 
-      // const price = ethers.utils.parseUnits(newListing.price, "ether");
+      const price = ethers.utils.parseUnits(newSP, "ether");
 
-      // let transaction = await contract.createToken(metadataURL, price, {
-      //   value: listingPrice,
-      // });
-      // await transaction.wait();
+      let transaction = await contract.updateListPrice(price);
+      await transaction.wait();
 
-      // contract.updateListPrice(sp);
+      console.log("Updatings!!!!!!!!!!!!", price, transaction);
 
-      alert("Successfully created your listing!");
-      window.location.replace("/");
+      // contract.updateListPrice(price);
+
+      alert("Successfully updated the price of your listing!");
     } catch (e) {
       alert("Upload error" + e);
     }
@@ -137,10 +136,9 @@ const ListingDetails = (props) => {
             )}{" "}
             ETH
           </div>
-          {currAddress == data.owner ||
-            (currAddress == data.seller && (
-              <button onClick={changePrice}>Change Price</button>
-            ))}
+          {currAddress == data.seller && (
+            <button onClick={changePrice}>Change Price</button>
+          )}
 
           <div>
             Owner: <span className="text-sm">{data.owner}</span>
@@ -149,7 +147,7 @@ const ListingDetails = (props) => {
             Seller: <span className="text-sm">{data.seller}</span>
           </div>
           <div>
-            {currAddress == data.owner || currAddress == data.seller ? (
+            {currAddress !== data.seller ? (
               <button
                 className="enableEthereumButton bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-sm"
                 onClick={() => buyProperty(tokenId)}

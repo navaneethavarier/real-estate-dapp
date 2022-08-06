@@ -103,15 +103,21 @@ contract RealEstateDapp is ERC721URIStorage {
         //Update the mapping of tokenId's to Token details, useful for retrieval functions
         idToListedToken[tokenId] = ListedToken(
             tokenId,
-            payable(msg.sender),
+            payable(address(this)),
             payable(msg.sender),
             price,
             true
         );
 
-        _transfer(msg.sender, msg.sender, tokenId);
+        _transfer(msg.sender, address(this), tokenId);
         //Emit the event for successful transfer. The frontend parses this message and updates the end user
-        emit TokenListedSuccess(tokenId, msg.sender, msg.sender, price, true);
+        emit TokenListedSuccess(
+            tokenId,
+            address(this),
+            msg.sender,
+            price,
+            true
+        );
     }
 
     //This will return all the NFTs currently listed to be sold on the marketplace
@@ -178,9 +184,9 @@ contract RealEstateDapp is ERC721URIStorage {
         _itemsSold.increment();
 
         //Actually transfer the token to the new owner
-        _transfer(msg.sender, msg.sender, tokenId);
+        _transfer(address(this), msg.sender, tokenId);
         //approve the marketplace to sell NFTs on your behalf
-        approve(msg.sender, tokenId);
+        approve(address(this), tokenId);
 
         //Transfer the listing fee to the marketplace creator
         payable(owner).transfer(listPrice);
