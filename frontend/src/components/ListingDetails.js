@@ -1,6 +1,5 @@
 import Navbar from "./Navbar";
-import axie from "../tile.jpeg";
-import { useLocation, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import ListingsJson from "../Listings.json";
 import axios from "axios";
 import { useState } from "react";
@@ -11,11 +10,14 @@ const ListingDetails = (props) => {
   const [message, updateMessage] = useState("");
   const [currAddress, updateCurrAddress] = useState("0x");
 
+  const [newSP, setNewSP] = useState();
+
   async function getListingDetails(tokenId) {
     const ethers = require("ethers");
     //After adding your Hardhat network to your metamask, this code will get providers and signers
     const provider = new ethers.providers.Web3Provider(window.ethereum);
     const signer = provider.getSigner();
+
     const addr = await signer.getAddress();
     //Pull the deployed contract instance
     let contract = new ethers.Contract(
@@ -25,24 +27,24 @@ const ListingDetails = (props) => {
     );
     //create an NFT Token
     const tokenURI = await contract.tokenURI(tokenId);
+    console.log(tokenId);
     const listedToken = await contract.getListedTokenForId(tokenId);
     let meta = await axios.get(tokenURI);
     meta = meta.data;
-    console.log(listedToken);
+    console.log("META", meta);
 
     let item = {
-      price: meta.price,
+      price: meta.cost || meta.price,
       tokenId: tokenId,
       seller: listedToken.seller,
       owner: listedToken.owner,
       image: meta.image,
       name: meta.name,
-      description: meta.description,
+      description: meta.description || meta.desc,
     };
     console.log(item);
     updateData(item);
     updateDataFetched(true);
-    console.log("address", addr);
     updateCurrAddress(addr);
   }
 
@@ -74,6 +76,35 @@ const ListingDetails = (props) => {
     }
   }
 
+  const changePrice = async () => {
+    // e.preventDefault();
+
+    try {
+      const ethers = require("ethers");
+      // const metadataURL = await uploadMetadataToIPFS();
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const signer = provider.getSigner();
+
+      let contract = new ethers.Contract(
+        ListingsJson.address,
+        ListingsJson.abi,
+        signer
+      );
+
+      const price = ethers.utils.parseUnits(newSP, "ether");
+
+      let transaction = await contract.updateListPrice(data.tokenId, price);
+      await transaction.wait();
+
+      console.log("Updatings!!!!!!!!!!!!", price, transaction);
+
+      alert("Successfully updated the price of your listing!");
+    } catch (e) {
+      console.log(e);
+      // alert("Upload error" + e);
+    }
+  };
+
   const params = useParams();
   const tokenId = params.tokenId;
   if (!dataFetched) getListingDetails(tokenId);
@@ -87,8 +118,28 @@ const ListingDetails = (props) => {
           <div>Name: {data.name}</div>
           <div>Description: {data.description}</div>
           <div>
-            Price: <span className="">{data.price + " ETH"}</span>
+            Price :
+            {currAddress == data.owner || currAddress == data.seller ? (
+              <input
+                style={{
+                  backgroundColor: "black",
+                  width: "5em",
+                  marginLeft: "1em",
+                }}
+                defaultValue={data.price}
+                onChange={(e) => {
+                  setNewSP(e.target.value);
+                }}
+              />
+            ) : (
+              <span className="">{data.price + " ETH"}</span>
+            )}{" "}
+            ETH
           </div>
+          {currAddress == data.seller && (
+            <button onClick={changePrice}>Change Price</button>
+          )}
+
           <div>
             Owner: <span className="text-sm">{data.owner}</span>
           </div>
@@ -96,7 +147,7 @@ const ListingDetails = (props) => {
             Seller: <span className="text-sm">{data.seller}</span>
           </div>
           <div>
-            {currAddress == data.owner || currAddress == data.seller ? (
+            {currAddress !== data.seller ? (
               <button
                 className="enableEthereumButton bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-sm"
                 onClick={() => buyProperty(tokenId)}

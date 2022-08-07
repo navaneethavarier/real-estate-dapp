@@ -8,7 +8,6 @@ import Listings from "./components/Listings";
 import Account from "./components/Account";
 import CreateListing from "./components/CreateListing";
 import ListingDetails from "./components/ListingDetails";
-import { Login } from "./components/Login";
 import Login1 from "./components/Login1";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));

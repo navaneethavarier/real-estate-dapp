@@ -54,7 +54,7 @@ function Navbar() {
   useEffect(() => {
     let val = window.ethereum.isConnected();
     if (val) {
-      console.log("here");
+      console.log("here login");
       getAddress();
       toggleConnect(val);
       updateButton();
@@ -66,7 +66,7 @@ function Navbar() {
   });
 
   return (
-    <div className="">
+    <div>
       <nav className="w-screen">
         <ul className="flex items-end justify-between py-3 bg-transparent text-white pr-5">
           <li className="flex items-end ml-5 pb-2">

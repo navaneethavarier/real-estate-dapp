@@ -71,7 +71,7 @@ export default function CreateListing() {
         signer
       );
 
-      const price = ethers.utils.parseUnits(newListing.price, "ether");
+      const price = ethers.utils.parseUnits(newListing.cost, "ether");
       let listingPrice = await contract.getListPrice();
       listingPrice = listingPrice.toString();
 
@@ -86,11 +86,12 @@ export default function CreateListing() {
       setNewListing({ name: "", description: "", price: "" });
       window.location.replace("/");
     } catch (e) {
-      alert("Upload error" + e);
+      console.log("Upload error", e);
+
+      // alert("Upload error" + e);
     }
   }
 
-  console.log("Working", process.env);
   return (
     <div className="">
       <Navbar></Navbar>

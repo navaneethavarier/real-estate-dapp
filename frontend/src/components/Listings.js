@@ -3,12 +3,18 @@ import ListingCard from "./ListingCard";
 import ListingsJson from "../Listings.json";
 import axios from "axios";
 import { useState } from "react";
+import { useCookies } from "react-cookie";
 
 export default function Listings() {
   const [data, updateData] = useState();
   const [dataFetched, updateFetched] = useState(false);
+  const [cookies, setCookie] = useCookies(["account"]);
+  const [accountverified, setAccountVerified] = useState(
+    localStorage.getItem("accountverified")
+  );
 
   async function getAllListings() {
+    console.log("Cookie", cookies);
     const ethers = require("ethers");
     const provider = new ethers.providers.Web3Provider(window.ethereum);
     const signer = provider.getSigner();
