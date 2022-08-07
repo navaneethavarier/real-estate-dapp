@@ -13,14 +13,14 @@ contract RealEstateDapp is ERC721URIStorage {
     //Keeps track of the number of items sold on the marketplace
     Counters.Counter private _itemsSold;
     //owner is the contract address that created the smart contract
-    address payable owner;
+    address payable owner = payable(msg.sender);
     //The fee charged by the marketplace to be allowed to list an NFT
-    uint256 listPrice = 0.01 ether;
+    uint256 listPrice = 0.001 ether;
 
     //The structure to store info about a listed token
     struct ListedToken {
         uint256 tokenId;
-        address payable owner;
+        // address payable owner;
         address payable seller;
         uint256 price;
         bool currentlyListed;
@@ -29,7 +29,6 @@ contract RealEstateDapp is ERC721URIStorage {
     //the event emitted when a token is successfully listed
     event TokenListedSuccess(
         uint256 indexed tokenId,
-        address owner,
         address seller,
         uint256 price,
         bool currentlyListed
@@ -42,9 +41,14 @@ contract RealEstateDapp is ERC721URIStorage {
         owner = payable(msg.sender);
     }
 
-    function updateListPrice(uint256 _listPrice) public payable {
-        require(owner == msg.sender, "Only owner can update listing price");
-        listPrice = _listPrice;
+    function updateListPrice(uint256 _id, uint256 _listPrice)
+        public
+        payable
+        returns (bool)
+    {
+        // require(owner == msg.sender, "Only owner can update listing price");
+        idToListedToken[_id].price = _listPrice;
+        return true;
     }
 
     function getListPrice() public view returns (uint256) {
@@ -103,15 +107,21 @@ contract RealEstateDapp is ERC721URIStorage {
         //Update the mapping of tokenId's to Token details, useful for retrieval functions
         idToListedToken[tokenId] = ListedToken(
             tokenId,
-            payable(msg.sender),
+            // payable(address(this)),
             payable(msg.sender),
             price,
             true
         );
 
-        _transfer(msg.sender, msg.sender, tokenId);
+        _transfer(msg.sender, address(this), tokenId);
         //Emit the event for successful transfer. The frontend parses this message and updates the end user
-        emit TokenListedSuccess(tokenId, msg.sender, msg.sender, price, true);
+        emit TokenListedSuccess(
+            tokenId,
+            // address(this),
+            msg.sender,
+            price,
+            true
+        );
     }
 
     //This will return all the NFTs currently listed to be sold on the marketplace
@@ -141,7 +151,7 @@ contract RealEstateDapp is ERC721URIStorage {
         //Important to get a count of all the NFTs that belong to the user before we can make an array for them
         for (uint256 i = 0; i < totalItemCount; i++) {
             if (
-                idToListedToken[i + 1].owner == msg.sender ||
+                // idToListedToken[i + 1].owner == msg.sender ||
                 idToListedToken[i + 1].seller == msg.sender
             ) {
                 itemCount += 1;
@@ -152,7 +162,7 @@ contract RealEstateDapp is ERC721URIStorage {
         ListedToken[] memory items = new ListedToken[](itemCount);
         for (uint256 i = 0; i < totalItemCount; i++) {
             if (
-                idToListedToken[i + 1].owner == msg.sender ||
+                // idToListedToken[i + 1].owner == msg.sender ||
                 idToListedToken[i + 1].seller == msg.sender
             ) {
                 uint256 currentId = i + 1;
@@ -178,12 +188,12 @@ contract RealEstateDapp is ERC721URIStorage {
         _itemsSold.increment();
 
         //Actually transfer the token to the new owner
-        _transfer(msg.sender, msg.sender, tokenId);
+        _transfer(address(this), msg.sender, tokenId);
         //approve the marketplace to sell NFTs on your behalf
-        approve(msg.sender, tokenId);
+        approve(address(this), tokenId);
 
         //Transfer the listing fee to the marketplace creator
-        payable(owner).transfer(listPrice);
+        payable(seller).transfer(listPrice);
         //Transfer the proceeds from the sale to the seller of the NFT
         payable(seller).transfer(msg.value);
     }

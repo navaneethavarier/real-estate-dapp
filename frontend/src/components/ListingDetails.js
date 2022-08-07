@@ -27,6 +27,7 @@ const ListingDetails = (props) => {
     );
     //create an NFT Token
     const tokenURI = await contract.tokenURI(tokenId);
+    console.log(tokenId);
     const listedToken = await contract.getListedTokenForId(tokenId);
     let meta = await axios.get(tokenURI);
     meta = meta.data;
@@ -75,8 +76,8 @@ const ListingDetails = (props) => {
     }
   }
 
-  const changePrice = async (e) => {
-    e.preventDefault();
+  const changePrice = async () => {
+    // e.preventDefault();
 
     try {
       const ethers = require("ethers");
@@ -92,16 +93,15 @@ const ListingDetails = (props) => {
 
       const price = ethers.utils.parseUnits(newSP, "ether");
 
-      let transaction = await contract.updateListPrice(price);
+      let transaction = await contract.updateListPrice(data.tokenId, price);
       await transaction.wait();
 
       console.log("Updatings!!!!!!!!!!!!", price, transaction);
 
-      // contract.updateListPrice(price);
-
       alert("Successfully updated the price of your listing!");
     } catch (e) {
-      alert("Upload error" + e);
+      console.log(e);
+      // alert("Upload error" + e);
     }
   };
 
