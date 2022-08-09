@@ -8,11 +8,19 @@ import {
 } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useLocation } from "react-router";
+import { useNavigate } from "react-router-dom";
 
 function Navbar() {
+  const navigate = useNavigate();
   const [connected, toggleConnect] = useState(false);
   const location = useLocation();
   const [currAddress, updateAddress] = useState("0x");
+
+  const logout = (async) => {
+    localStorage.removeItem("accountverified");
+    alert("Please login to access the platform");
+    navigate("/login");
+  };
 
   async function getAddress() {
     const ethers = require("ethers");
@@ -33,9 +41,8 @@ function Navbar() {
 
   async function connectWebsite() {
     const chainId = await window.ethereum.request({ method: "eth_chainId" });
-    console.log(chainId);
+
     if (chainId !== "0x5") {
-      //alert('Incorrect network! Switch your metamask network to Rinkeby');
       await window.ethereum.request({
         method: "wallet_switchEthereumChain",
         params: [{ chainId: "0x5" }],
@@ -45,7 +52,7 @@ function Navbar() {
       .request({ method: "eth_requestAccounts" })
       .then(() => {
         updateButton();
-        console.log("here");
+
         getAddress();
         window.location.replace(location.pathname);
       });
@@ -53,8 +60,8 @@ function Navbar() {
 
   useEffect(() => {
     let val = window.ethereum.isConnected();
+
     if (val) {
-      console.log("here login");
       getAddress();
       toggleConnect(val);
       updateButton();
@@ -76,43 +83,39 @@ function Navbar() {
               </div>
             </Link>
           </li>
-          <li className="w-2/6">
+          <li className="w-3/6">
             <ul className="lg:flex justify-between font-bold mr-10 text-lg">
-              {location.pathname === "/" ? (
-                <li className="border-b-2 hover:pb-0 p-2">
-                  <Link to="/">Listings</Link>
-                </li>
-              ) : (
-                <li className="hover:border-b-2 hover:pb-0 p-2">
-                  <Link to="/">Listings</Link>
-                </li>
-              )}
-              {location.pathname === "/sellNFT" ? (
-                <li className="border-b-2 hover:pb-0 p-2">
-                  <Link to="/createListing">Create Listing</Link>
-                </li>
-              ) : (
-                <li className="hover:border-b-2 hover:pb-0 p-2">
-                  <Link to="/createListing">Create Listing</Link>
-                </li>
-              )}
-              {location.pathname === "/profile" ? (
-                <li className="border-b-2 hover:pb-0 p-2">
-                  <Link to="/account">Account</Link>
-                </li>
-              ) : (
-                <li className="hover:border-b-2 hover:pb-0 p-2">
-                  <Link to="/account">Account</Link>
-                </li>
-              )}
+              <li className=" hover:pb-0 p-2">
+                <Link to="/">Listings</Link>
+              </li>
+
+              <li className=" hover:pb-0 p-2">
+                <Link to="/createListing">Create Listing</Link>
+              </li>
+
+              <li className="hover:pb-0 p-2">
+                <Link to="/account">Account</Link>
+              </li>
+
               <li>
                 <button
                   className="enableEthereumButton bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-sm"
                   onClick={connectWebsite}
                 >
-                  {connected ? "Connected" : "Connect Wallet"}
+                  {connected === true ? "Connected" : "Connect Wallet"}
                 </button>
               </li>
+
+              {connected === true && (
+                <li>
+                  <button
+                    className="enableEthereumButton bg-red-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-sm ml-2 mr-4"
+                    onClick={logout}
+                  >
+                    Log out
+                  </button>
+                </li>
+              )}
             </ul>
           </li>
         </ul>
@@ -121,7 +124,6 @@ function Navbar() {
         {currAddress !== "0x"
           ? ""
           : "Not Connected. Please login to view Investments"}{" "}
-        {/* {currAddress !== "0x" ? currAddress.substring(0, 15) + "..." : ""} */}
       </div>
     </div>
   );

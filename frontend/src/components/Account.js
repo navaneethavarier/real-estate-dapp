@@ -4,18 +4,28 @@ import ListingsJson from "../Listings.json";
 import axios from "axios";
 import { useState, useEffect } from "react";
 import ListingCard from "./ListingCard";
+import { useNavigate } from "react-router-dom";
+
 const ethers = require("ethers");
 const cname = "flex text-center flex-col mt-11 md:text-2xl text-white";
 const cname2 =
   "flex text-center flex-row justify-center mt-10 md:text-2xl text-white";
 
 export default function Account() {
+  const navigate = useNavigate();
   const [listingsdata, setListingsData] = useState([]);
   const [flag, setFlag] = useState(false);
   const [walletaddress, setWalletAddress] = useState("0x");
   const [balance, setBalance] = useState();
-
   const [netWorth, setNetWorth] = useState("0");
+
+  useEffect(() => {
+    console.log(localStorage.getItem("accountverified"));
+    if (localStorage.getItem("accountverified") === null) {
+      alert("Please login to access the platform");
+      navigate("/login");
+    }
+  }, []);
 
   async function getInvestments() {
     let totalcost = 0;

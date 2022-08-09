@@ -2,50 +2,114 @@ import Navbar from "./Navbar";
 import { useParams } from "react-router-dom";
 import ListingsJson from "../Listings.json";
 import axios from "axios";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { updateJSON } from "../pinata";
 
 const ListingDetails = (props) => {
+  const navigate = useNavigate();
   const [data, updateData] = useState({});
   const [dataFetched, updateDataFetched] = useState(false);
   const [message, updateMessage] = useState("");
   const [currAddress, updateCurrAddress] = useState("0x");
-
   const [newSP, setNewSP] = useState();
+
+  useEffect(() => {
+    console.log(data);
+    if (localStorage.getItem("accountverified") === null) {
+      alert("Please login to access the platform");
+      navigate("/login");
+    }
+  }, [data]);
+
+  const uploadMetadataToIPFS = async () => {
+    const json = {
+      name: data.name,
+      desc: data.description,
+      cost: data.price,
+      image: data.image,
+    };
+
+    try {
+      const response = await updateJSON(json);
+      if (response.success === true) {
+        console.log("Uploaded JSON to Pinata: ", response);
+        return response.pinataURL;
+      }
+    } catch (e) {
+      console.log("error uploading JSON metadata:", e);
+    }
+  };
 
   async function getListingDetails(tokenId) {
     const ethers = require("ethers");
-    //After adding your Hardhat network to your metamask, this code will get providers and signers
     const provider = new ethers.providers.Web3Provider(window.ethereum);
     const signer = provider.getSigner();
 
     const addr = await signer.getAddress();
-    //Pull the deployed contract instance
+
     let contract = new ethers.Contract(
       ListingsJson.address,
       ListingsJson.abi,
       signer
     );
-    //create an NFT Token
-    const tokenURI = await contract.tokenURI(tokenId);
-    console.log(tokenId);
-    const listedToken = await contract.getListedTokenForId(tokenId);
-    let meta = await axios.get(tokenURI);
-    meta = meta.data;
-    console.log("META", meta);
 
-    let item = {
-      price: meta.cost || meta.price,
-      tokenId: tokenId,
-      seller: listedToken.seller,
-      owner: listedToken.owner,
-      image: meta.image,
-      name: meta.name,
-      description: meta.description || meta.desc,
-    };
-    console.log(item);
-    updateData(item);
-    updateDataFetched(true);
-    updateCurrAddress(addr);
+    //========================
+    let transaction = await contract.getAllListings();
+
+    const items = await Promise.all(
+      transaction.map(async (i) => {
+        const tokenURI = await contract.tokenURI(i.tokenId);
+        let meta = await axios.get(tokenURI);
+        meta = meta.data;
+        console.log(meta);
+        let price = ethers.utils.formatUnits(i.price.toString(), "ether");
+        let item = {
+          price,
+          tokenId: i.tokenId.toNumber(),
+          seller: i.seller,
+          owner: i.owner,
+          image: meta.image,
+          name: meta.name,
+          description: meta.description,
+        };
+        return item;
+      })
+    );
+
+    console.log("ITEMS FROM LISTING DETAILS PAGE", items);
+    let i;
+    for (i = 0; i < items.length; i++) {
+      if (items[i].tokenId == tokenId) {
+        updateData(items[i]);
+        updateDataFetched(true);
+        updateCurrAddress(addr);
+        break;
+      }
+    }
+
+    console.log(data);
+    //===========================
+
+    // const tokenURI = await contract.tokenURI(tokenId);
+
+    // const listedToken = await contract.getListedTokenForId(tokenId);
+    // let meta = await axios.get(tokenURI);
+    // meta = meta.data;
+
+    // let item = {
+    //   price: meta.cost || meta.price,
+    //   tokenId: tokenId,
+    //   seller: listedToken.seller,
+    //   owner: listedToken.owner,
+    //   image: meta.image,
+    //   name: meta.name,
+    //   description: meta.description || meta.desc,
+    // };
+
+    // updateData(item);
+    // updateDataFetched(true);
+    // updateCurrAddress(addr);
   }
 
   async function buyProperty(tokenId) {
@@ -77,7 +141,9 @@ const ListingDetails = (props) => {
   }
 
   const changePrice = async () => {
-    // e.preventDefault();
+    const metadataURL = await uploadMetadataToIPFS();
+
+    console.log("Update metadata", metadataURL);
 
     try {
       const ethers = require("ethers");
@@ -95,8 +161,6 @@ const ListingDetails = (props) => {
 
       let transaction = await contract.updateListPrice(data.tokenId, price);
       await transaction.wait();
-
-      console.log("Updatings!!!!!!!!!!!!", price, transaction);
 
       alert("Successfully updated the price of your listing!");
     } catch (e) {
@@ -132,7 +196,7 @@ const ListingDetails = (props) => {
                 }}
               />
             ) : (
-              <span className="">{data.price + " ETH"}</span>
+              <span className="">{data.price}</span>
             )}{" "}
             ETH
           </div>

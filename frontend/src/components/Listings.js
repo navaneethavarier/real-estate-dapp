@@ -2,19 +2,24 @@ import Navbar from "./Navbar";
 import ListingCard from "./ListingCard";
 import ListingsJson from "../Listings.json";
 import axios from "axios";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useCookies } from "react-cookie";
+import { useNavigate } from "react-router-dom";
 
 export default function Listings() {
+  const navigate = useNavigate();
   const [data, updateData] = useState();
   const [dataFetched, updateFetched] = useState(false);
   const [cookies, setCookie] = useCookies(["account"]);
-  const [accountverified, setAccountVerified] = useState(
-    localStorage.getItem("accountverified")
-  );
+
+  useEffect(() => {
+    if (localStorage.getItem("accountverified") === null) {
+      alert("Please login to access the platform");
+      navigate("/login");
+    }
+  }, []);
 
   async function getAllListings() {
-    console.log("Cookie", cookies);
     const ethers = require("ethers");
     const provider = new ethers.providers.Web3Provider(window.ethereum);
     const signer = provider.getSigner();
@@ -31,7 +36,7 @@ export default function Listings() {
         const tokenURI = await contract.tokenURI(i.tokenId);
         let meta = await axios.get(tokenURI);
         meta = meta.data;
-
+        console.log(meta);
         let price = ethers.utils.formatUnits(i.price.toString(), "ether");
         let item = {
           price,

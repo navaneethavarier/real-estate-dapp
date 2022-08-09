@@ -1,12 +1,14 @@
 import Navbar from "./Navbar";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { uploadFileToIPFS, uploadJSONToIPFS } from "../pinata";
 import ListingsJson from "../Listings.json";
+import { useNavigate } from "react-router-dom";
 // import { useLocation } from "react-router";
 
 const ethers = require("ethers");
 
 export default function CreateListing() {
+  const navigate = useNavigate();
   const [newListing, setNewListing] = useState({
     name: "",
     desc: "",
@@ -15,6 +17,14 @@ export default function CreateListing() {
   const [fileURL, setFileURL] = useState(null);
   const [status, setStatus] = useState("");
   // const location = useLocation();
+
+  useEffect(() => {
+    console.log(localStorage.getItem("accountverified"));
+    if (localStorage.getItem("accountverified") === null) {
+      alert("Please login to access the platform");
+      navigate("/login");
+    }
+  }, []);
 
   async function OnChangeFile(e) {
     var file = e.target.files[0];
