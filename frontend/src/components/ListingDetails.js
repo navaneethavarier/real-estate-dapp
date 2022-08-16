@@ -5,6 +5,7 @@ import axios from "axios";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { updateJSON } from "../pinata";
+import { buttonstyle } from "./exportCSS";
 
 const ListingDetails = (props) => {
   const navigate = useNavigate();
@@ -197,23 +198,35 @@ const ListingDetails = (props) => {
               />
             ) : (
               <span className="">{data.price}</span>
-            )}{" "}
+            )}
             ETH
+            {currAddress == data.seller && (
+              <button
+                className={`${buttonstyle}  w-auto bg-yellow-500 ml-4`}
+                onClick={changePrice}
+              >
+                Change Price
+              </button>
+            )}
           </div>
-          {currAddress == data.seller && (
-            <button onClick={changePrice}>Change Price</button>
-          )}
 
           <div>
-            Owner: <span className="text-sm">{data.owner}</span>
+            Owner : <span className="text-sm">{data.seller}</span>
           </div>
+
           <div>
-            Seller: <span className="text-sm">{data.seller}</span>
+            Currently Listed : Yes{" "}
+            {currAddress == data.owner ||
+              (currAddress == data.seller && (
+                <button className={`${buttonstyle}  w-auto bg-yellow-500 ml-4`}>
+                  Remove from market
+                </button>
+              ))}
           </div>
           <div>
             {currAddress !== data.seller ? (
               <button
-                className="enableEthereumButton bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-sm"
+                className=" bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-sm"
                 onClick={() => buyProperty(tokenId)}
               >
                 Buy this property

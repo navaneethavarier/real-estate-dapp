@@ -5,7 +5,7 @@
 const axios = require("axios");
 const FD = require("form-data");
 
-export const uploadJSONToIPFS = async (json) => {
+export const uploadJson = async (json) => {
   const URL = `https://api.pinata.cloud/pinning/pinJSONToIPFS`;
 
   return axios
@@ -30,7 +30,7 @@ export const uploadJSONToIPFS = async (json) => {
     });
 };
 
-export const uploadFileToIPFS = async (f) => {
+export const uploadImage = async (f) => {
   const url = `https://api.pinata.cloud/pinning/pinFileToIPFS`;
 
   let fdata = new FD();

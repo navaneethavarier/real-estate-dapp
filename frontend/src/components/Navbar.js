@@ -10,11 +10,13 @@ import { useEffect, useState } from "react";
 import { useLocation } from "react-router";
 import { useNavigate } from "react-router-dom";
 
+const buttonstyling = "text-white font-bold py-2 px-4 rounded text-sm";
+
 function Navbar() {
   const navigate = useNavigate();
-  const [connected, toggleConnect] = useState(false);
+  const [connected, setConnected] = useState(false);
   const location = useLocation();
-  const [currAddress, updateAddress] = useState("0x");
+  const [currAddress, setCurrAddress] = useState("0x");
 
   const logout = (async) => {
     localStorage.removeItem("accountverified");
@@ -27,16 +29,7 @@ function Navbar() {
     const provider = new ethers.providers.Web3Provider(window.ethereum);
     const signer = provider.getSigner();
     const addr = await signer.getAddress();
-    updateAddress(addr);
-  }
-
-  function updateButton() {
-    const ethereumButton = document.querySelector(".enableEthereumButton");
-    ethereumButton.textContent = "Connected";
-    ethereumButton.classList.remove("hover:bg-blue-70");
-    ethereumButton.classList.remove("bg-blue-500");
-    ethereumButton.classList.add("hover:bg-green-70");
-    ethereumButton.classList.add("bg-green-500");
+    setCurrAddress(addr);
   }
 
   async function connectWebsite() {
@@ -51,8 +44,6 @@ function Navbar() {
     await window.ethereum
       .request({ method: "eth_requestAccounts" })
       .then(() => {
-        updateButton();
-
         getAddress();
         window.location.replace(location.pathname);
       });
@@ -60,17 +51,19 @@ function Navbar() {
 
   useEffect(() => {
     let val = window.ethereum.isConnected();
+    console.log(val);
 
     if (val) {
       getAddress();
-      toggleConnect(val);
-      updateButton();
+      setConnected(val);
+
+      console.log(connected);
     }
 
     window.ethereum.on("accountsChanged", function (accounts) {
       window.location.replace(location.pathname);
     });
-  });
+  }, []);
 
   return (
     <div>
@@ -83,33 +76,32 @@ function Navbar() {
               </div>
             </Link>
           </li>
-          <li className="w-3/6">
+          <li className="w-4/6">
             <ul className="lg:flex justify-between font-bold mr-10 text-lg">
               <li className=" hover:pb-0 p-2">
                 <Link to="/">Listings</Link>
               </li>
-
               <li className=" hover:pb-0 p-2">
                 <Link to="/createListing">Create Listing</Link>
               </li>
-
               <li className="hover:pb-0 p-2">
                 <Link to="/account">Account</Link>
               </li>
-
+              <li className="hover:pb-0 p-2">
+                <Link to="/myinvestments">My Investments</Link>
+              </li>
               <li>
                 <button
-                  className="enableEthereumButton bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-sm"
+                  className={`bg-green-500 hover:bg-green-700 ${buttonstyling}`}
                   onClick={connectWebsite}
                 >
-                  {connected === true ? "Connected" : "Connect Wallet"}
+                  {currAddress !== "0x" ? "Connected" : "Connect Wallet"}
                 </button>
               </li>
-
-              {connected === true && (
+              {currAddress !== "0x" && (
                 <li>
                   <button
-                    className="enableEthereumButton bg-red-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-sm ml-2 mr-4"
+                    className={`bg-red-500 hover:bg-red-700 ${buttonstyling}`}
                     onClick={logout}
                   >
                     Log out

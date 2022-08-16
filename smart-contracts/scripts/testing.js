@@ -6,5 +6,3 @@ async function getListings() {
   var vals = await contract.getListPrice();
   console.log(vals);
 }
-
-getNFts();
