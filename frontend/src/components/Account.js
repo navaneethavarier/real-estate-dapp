@@ -16,6 +16,7 @@ export default function Account() {
   const [walletaddress, setWalletAddress] = useState("0x");
   const [balance, setBalance] = useState();
   const [netWorth, setNetWorth] = useState("0");
+  const [numberOfInvestments, setNumberOfInvestments] = useState();
 
   useEffect(() => {
     if (localStorage.getItem("accountverified") === null) {
@@ -34,7 +35,7 @@ export default function Account() {
     const balance1 = await ethsigner.getBalance();
     setBalance(ethers.utils.formatEther(balance1));
 
-    console.log(address1);
+    // console.log(address1);
 
     let contract = new ethers.Contract(
       ListingsJson.address,
@@ -46,29 +47,30 @@ export default function Account() {
 
     const items = await Promise.all(
       transaction.map(async (i) => {
-        const tokenURI = await contract.tokenURI(i.tokenId);
-        let meta = await axios.get(tokenURI);
-        meta = meta.data;
+        // const tokenURI = await contract.tokenURI(i.tokenId);
+        // let meta = await axios.get(tokenURI);
+        // meta = meta.data;
 
         let price = ethers.utils.formatUnits(i.price.toString(), "ether");
-        let item = {
-          price,
-          tokenId: i.tokenId.toNumber(),
-          seller: i.seller,
-          owner: i.owner,
-          image: meta.image,
-          name: meta.name,
-          description: meta.description,
-        };
+        // let item = {
+        //   price,
+        //   tokenId: i.tokenId.toNumber(),
+        //   seller: i.seller,
+        //   owner: i.owner,
+        //   image: meta.image,
+        //   name: meta.name,
+        //   description: meta.description,
+        // };
         totalcost += Number(price);
-        return item;
+        // return item;
       })
     );
 
-    setListingsData(items);
+    // setListingsData(items);
     setFlag(true);
     setWalletAddress(address1);
     setNetWorth(totalcost.toPrecision(3));
+    setNumberOfInvestments(items.length);
   }
 
   if (!flag) {
@@ -91,7 +93,7 @@ export default function Account() {
           </div>
 
           <div className={cname}>
-            <h2>Number of Investments - {listingsdata.length}</h2>
+            <h2>Number of Investments - {numberOfInvestments}</h2>
           </div>
 
           <div className={cname}>
