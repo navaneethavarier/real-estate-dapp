@@ -3,14 +3,13 @@ import ListingCard from "./ListingCard";
 import ListingsJson from "../Listings.json";
 import axios from "axios";
 import { useState, useEffect } from "react";
-import { useCookies } from "react-cookie";
 import { useNavigate } from "react-router-dom";
+import { css1, css2, cname } from "./exportCSS";
 
 export default function Listings() {
   const navigate = useNavigate();
   const [data, updateData] = useState();
   const [dataFetched, updateFetched] = useState(false);
-  const [cookies, setCookie] = useCookies(["account"]);
 
   useEffect(() => {
     if (localStorage.getItem("accountverified") === null) {
@@ -28,29 +27,29 @@ export default function Listings() {
       ListingsJson.abi,
       signer
     );
-
+    console.log(signer);
     let transaction = await contract.getAllListings();
 
     const items = await Promise.all(
       transaction.map(async (i) => {
-        const tokenURI = await contract.tokenURI(i.tokenId);
-        let meta = await axios.get(tokenURI);
-        meta = meta.data;
-        console.log(meta);
-        let price = ethers.utils.formatUnits(i.price.toString(), "ether");
-        let item = {
-          price,
-          tokenId: i.tokenId.toNumber(),
-          seller: i.seller,
-          owner: i.owner,
-          image: meta.image,
-          name: meta.name,
-          description: meta.description,
-        };
-        return item;
+        if (i.currentlyListed === true) {
+          const tokenURI = await contract.tokenURI(i.tokenId);
+          let meta = await axios.get(tokenURI);
+          meta = meta.data;
+          let price = ethers.utils.formatUnits(i.price.toString(), "ether");
+          let item = {
+            price,
+            tokenId: i.tokenId.toNumber(),
+            seller: i.seller,
+            currentlyListed: i.currentlyListed,
+            image: meta.image,
+            name: meta.name,
+            desc: meta.desc,
+          };
+          return item;
+        }
       })
     );
-
     updateFetched(true);
     updateData(items);
   }
@@ -60,9 +59,9 @@ export default function Listings() {
   return (
     <div>
       <Navbar></Navbar>
-      <div className="flex flex-col place-items-center mt-20">
-        <div className="md:text-xl font-bold text-white">
-          Recommended Listings
+      <div className={`${css2} mt-20`}>
+        <div className={`${cname}  text-white m-4`}>
+          <h2>Property Listings</h2>{" "}
         </div>
         <div className="flex mt-5 justify-between flex-wrap max-w-screen-xl text-center">
           {data &&
@@ -70,9 +69,11 @@ export default function Listings() {
             data !== null &&
             data.map((value, index) => {
               console.log("here111111", value);
-              return (
-                <ListingCard listingsdata={value} key={index}></ListingCard>
-              );
+              if (value !== undefined) {
+                return (
+                  <ListingCard listingsdata={value} key={index}></ListingCard>
+                );
+              }
             })}
         </div>
       </div>

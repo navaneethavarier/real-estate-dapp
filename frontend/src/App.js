@@ -7,6 +7,7 @@ import ListingDetails from "./components/ListingDetails";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Login1 from "./components/Login1";
+import MyInvestments from "./components/MyInvestments";
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
         <Route path="/listingdetails" element={<ListingDetails />} />
         <Route path="/account" element={<Account />} />
         <Route path="/createListing" element={<CreateListing />} />
+        <Route path="/myinvestments" element={<MyInvestments />} />
       </Routes>
     </div>
   );

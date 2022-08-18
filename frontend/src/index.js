@@ -9,6 +9,7 @@ import Account from "./components/Account";
 import CreateListing from "./components/CreateListing";
 import ListingDetails from "./components/ListingDetails";
 import Login1 from "./components/Login1";
+import MyInvestments from "./components/MyInvestments";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
@@ -20,6 +21,7 @@ root.render(
         <Route path="/listingdetails/:tokenId" element={<ListingDetails />} />
         <Route path="/createListing" element={<CreateListing />} />
         <Route path="/account" element={<Account />} />
+        <Route path="/myinvestments" element={<MyInvestments />} />
       </Routes>
     </BrowserRouter>
   </React.StrictMode>

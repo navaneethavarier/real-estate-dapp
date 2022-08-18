@@ -5,6 +5,7 @@ import axios from "axios";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { updateJSON } from "../pinata";
+import { buttonstyle } from "./exportCSS";
 
 const ListingDetails = (props) => {
   const navigate = useNavigate();
@@ -57,6 +58,8 @@ const ListingDetails = (props) => {
     //========================
     let transaction = await contract.getAllListings();
 
+    console.log(transaction[0].currentlyListed);
+
     const items = await Promise.all(
       transaction.map(async (i) => {
         const tokenURI = await contract.tokenURI(i.tokenId);
@@ -68,10 +71,10 @@ const ListingDetails = (props) => {
           price,
           tokenId: i.tokenId.toNumber(),
           seller: i.seller,
-          owner: i.owner,
+          currentlyListed: i.currentlyListed,
           image: meta.image,
           name: meta.name,
-          description: meta.description,
+          description: meta.desc,
         };
         return item;
       })
@@ -88,7 +91,6 @@ const ListingDetails = (props) => {
       }
     }
 
-    console.log(data);
     //===========================
 
     // const tokenURI = await contract.tokenURI(tokenId);
@@ -169,6 +171,34 @@ const ListingDetails = (props) => {
     }
   };
 
+  const changeStatus = async (e, status) => {
+    const metadataURL = await uploadMetadataToIPFS();
+
+    try {
+      const ethers = require("ethers");
+      // const metadataURL = await uploadMetadataToIPFS();
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const signer = provider.getSigner();
+
+      let contract = new ethers.Contract(
+        ListingsJson.address,
+        ListingsJson.abi,
+        signer
+      );
+
+      let transaction = await contract.updateCurrentlyListed(
+        data.tokenId,
+        status
+      );
+      await transaction.wait();
+
+      alert("Successfully removed property isting from market!");
+    } catch (e) {
+      console.log(e);
+      alert("Upload error");
+    }
+  };
+
   const params = useParams();
   const tokenId = params.tokenId;
   if (!dataFetched) getListingDetails(tokenId);
@@ -197,23 +227,42 @@ const ListingDetails = (props) => {
               />
             ) : (
               <span className="">{data.price}</span>
-            )}{" "}
+            )}
             ETH
+            {currAddress == data.seller && (
+              <button
+                className={`${buttonstyle}  w-auto bg-yellow-500 ml-4`}
+                onClick={changePrice}
+              >
+                Change Price
+              </button>
+            )}
           </div>
-          {currAddress == data.seller && (
-            <button onClick={changePrice}>Change Price</button>
-          )}
 
           <div>
-            Owner: <span className="text-sm">{data.owner}</span>
+            Owner : <span className="text-sm">{data.seller}</span>
           </div>
+
           <div>
-            Seller: <span className="text-sm">{data.seller}</span>
+            Currently Listed : {data.currentlyListed === true ? "Yes" : "No"}{" "}
+            {currAddress == data.owner ||
+              (currAddress == data.seller && (
+                <button
+                  className={`${buttonstyle}  w-auto bg-yellow-500 ml-4`}
+                  onClick={(e) => changeStatus(e, !data.currentlyListed)}
+                >
+                  {data.currentlyListed === false ? (
+                    <span>Add to market</span>
+                  ) : (
+                    <span>Remove from market</span>
+                  )}
+                </button>
+              ))}
           </div>
           <div>
             {currAddress !== data.seller ? (
               <button
-                className="enableEthereumButton bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-sm"
+                className=" bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-sm"
                 onClick={() => buyProperty(tokenId)}
               >
                 Buy this property

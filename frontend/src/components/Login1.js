@@ -3,6 +3,7 @@ import "./styles.css";
 import PropTypes from "prop-types";
 import web3 from "web3";
 import { useNavigate } from "react-router-dom";
+import { css1 } from "./exportCSS";
 const ethereum = window.ethereum;
 const weeb3 = new web3(window.ethereum);
 
@@ -12,9 +13,7 @@ const Login1 = () => {
   const handleClick = async () => {
     let message =
       "Hello! Please sign this message to confirm that you have access to this Ethereum wallet - it's free and will increase your account's safety.";
-    // let nonce = "In order to increase your security, this is your unique nonce for this login session - da-123-hgsdjjhfhbs";
-    // message = message + nonce;
-    // console.log(message);
+
     const accounts = await ethereum.request({ method: "eth_requestAccounts" });
     const account = accounts[0];
     const signature = await ethereum.request({
@@ -39,20 +38,13 @@ const Login1 = () => {
     }
   };
   return (
-    <div
-      style={{ fontColour: "white" }}
-      className="flex flex-col place-items-center mt-20 pb-10"
-    >
+    <div style={{ fontColour: "white" }} className={`${css1}20 pb-10`}>
       <div className="md:text-xl font-bold text-white ">Login Options</div>
-      <button className="Login-button Login-mm" onClick={handleClick}>
+      <button className="loginbutton Login" onClick={handleClick}>
         Login with MetaMask
       </button>
-      <button className="Login-button Login-mm" onClick={handleClick}>
-        Option 2
-      </button>
-      <button className="Login-button Login-mm" onClick={handleClick}>
-        Option 3
-      </button>
+      <button className="loginbutton Login">Option 2</button>
+      <button className="loginbutton Login">Option 3</button>
     </div>
   );
 };
