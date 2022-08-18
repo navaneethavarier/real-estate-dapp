@@ -27,29 +27,29 @@ export default function Listings() {
       ListingsJson.abi,
       signer
     );
-
+    console.log(signer);
     let transaction = await contract.getAllListings();
 
     const items = await Promise.all(
       transaction.map(async (i) => {
-        const tokenURI = await contract.tokenURI(i.tokenId);
-        let meta = await axios.get(tokenURI);
-        meta = meta.data;
-        console.log(meta);
-        let price = ethers.utils.formatUnits(i.price.toString(), "ether");
-        let item = {
-          price,
-          tokenId: i.tokenId.toNumber(),
-          seller: i.seller,
-          owner: i.owner,
-          image: meta.image,
-          name: meta.name,
-          description: meta.description,
-        };
-        return item;
+        if (i.currentlyListed === true) {
+          const tokenURI = await contract.tokenURI(i.tokenId);
+          let meta = await axios.get(tokenURI);
+          meta = meta.data;
+          let price = ethers.utils.formatUnits(i.price.toString(), "ether");
+          let item = {
+            price,
+            tokenId: i.tokenId.toNumber(),
+            seller: i.seller,
+            currentlyListed: i.currentlyListed,
+            image: meta.image,
+            name: meta.name,
+            desc: meta.desc,
+          };
+          return item;
+        }
       })
     );
-
     updateFetched(true);
     updateData(items);
   }
@@ -69,9 +69,11 @@ export default function Listings() {
             data !== null &&
             data.map((value, index) => {
               console.log("here111111", value);
-              return (
-                <ListingCard listingsdata={value} key={index}></ListingCard>
-              );
+              if (value !== undefined) {
+                return (
+                  <ListingCard listingsdata={value} key={index}></ListingCard>
+                );
+              }
             })}
         </div>
       </div>

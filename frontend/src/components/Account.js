@@ -22,7 +22,9 @@ export default function Account() {
       alert("Please login to access the platform");
       navigate("/login");
     }
-  }, []);
+
+    console.log("account", walletaddress);
+  }, [walletaddress]);
 
   async function getInvestments() {
     let totalcost = 0;
@@ -31,6 +33,8 @@ export default function Account() {
     const address1 = await ethsigner.getAddress();
     const balance1 = await ethsigner.getBalance();
     setBalance(ethers.utils.formatEther(balance1));
+
+    console.log(address1);
 
     let contract = new ethers.Contract(
       ListingsJson.address,
@@ -95,7 +99,7 @@ export default function Account() {
           </div>
         </form>
       </div>
-      <>
+      {/* <>
         <div className={`${cname}  text-white mt-11`}>
           <h2>Your Investments</h2>
           <div className="flex justify-center flex-wrap max-w-screen-xl">
@@ -111,7 +115,7 @@ export default function Account() {
             {listingsdata.length == 0 ? "Sorry, no data available." : ""}
           </div>
         </div>
-      </>
+      </> */}
     </div>
   );
 }

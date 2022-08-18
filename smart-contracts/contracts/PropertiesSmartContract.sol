@@ -109,7 +109,12 @@ contract RealEstateDapp is ERC721URIStorage {
 
         require(price > 0, "verifying the price is a positive number");
 
-        propinfo[tokenId] = PropListing(tokenId, payable(msg.sender), price);
+        propinfo[tokenId] = PropListing(
+            tokenId,
+            payable(msg.sender),
+            price,
+            true
+        );
 
         _transfer(msg.sender, address(this), tokenId);
 
@@ -176,5 +181,14 @@ contract RealEstateDapp is ERC721URIStorage {
         payable(seller).transfer(listPrice);
 
         payable(seller).transfer(msg.value);
+    }
+
+    function updateCurrentlyListed(uint256 _id, bool _currentlyListed)
+        public
+        payable
+        returns (bool)
+    {
+        propinfo[_id].currentlyListed = _currentlyListed;
+        return true;
     }
 }

@@ -58,6 +58,8 @@ const ListingDetails = (props) => {
     //========================
     let transaction = await contract.getAllListings();
 
+    console.log(transaction[0].currentlyListed);
+
     const items = await Promise.all(
       transaction.map(async (i) => {
         const tokenURI = await contract.tokenURI(i.tokenId);
@@ -69,10 +71,10 @@ const ListingDetails = (props) => {
           price,
           tokenId: i.tokenId.toNumber(),
           seller: i.seller,
-          owner: i.owner,
+          currentlyListed: i.currentlyListed,
           image: meta.image,
           name: meta.name,
-          description: meta.description,
+          description: meta.desc,
         };
         return item;
       })
@@ -89,7 +91,6 @@ const ListingDetails = (props) => {
       }
     }
 
-    console.log(data);
     //===========================
 
     // const tokenURI = await contract.tokenURI(tokenId);
@@ -170,6 +171,34 @@ const ListingDetails = (props) => {
     }
   };
 
+  const changeStatus = async (e, status) => {
+    const metadataURL = await uploadMetadataToIPFS();
+
+    try {
+      const ethers = require("ethers");
+      // const metadataURL = await uploadMetadataToIPFS();
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const signer = provider.getSigner();
+
+      let contract = new ethers.Contract(
+        ListingsJson.address,
+        ListingsJson.abi,
+        signer
+      );
+
+      let transaction = await contract.updateCurrentlyListed(
+        data.tokenId,
+        status
+      );
+      await transaction.wait();
+
+      alert("Successfully removed property isting from market!");
+    } catch (e) {
+      console.log(e);
+      alert("Upload error");
+    }
+  };
+
   const params = useParams();
   const tokenId = params.tokenId;
   if (!dataFetched) getListingDetails(tokenId);
@@ -215,11 +244,18 @@ const ListingDetails = (props) => {
           </div>
 
           <div>
-            Currently Listed : Yes{" "}
+            Currently Listed : {data.currentlyListed === true ? "Yes" : "No"}{" "}
             {currAddress == data.owner ||
               (currAddress == data.seller && (
-                <button className={`${buttonstyle}  w-auto bg-yellow-500 ml-4`}>
-                  Remove from market
+                <button
+                  className={`${buttonstyle}  w-auto bg-yellow-500 ml-4`}
+                  onClick={(e) => changeStatus(e, !data.currentlyListed)}
+                >
+                  {data.currentlyListed === false ? (
+                    <span>Add to market</span>
+                  ) : (
+                    <span>Remove from market</span>
+                  )}
                 </button>
               ))}
           </div>

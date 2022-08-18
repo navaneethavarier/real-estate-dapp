@@ -56,8 +56,6 @@ function Navbar() {
     if (val) {
       getAddress();
       setConnected(val);
-
-      console.log(connected);
     }
 
     window.ethereum.on("accountsChanged", function (accounts) {
@@ -95,7 +93,7 @@ function Navbar() {
                   className={`bg-green-500 hover:bg-green-700 ${buttonstyling}`}
                   onClick={connectWebsite}
                 >
-                  {currAddress !== "0x" ? "Connected" : "Connect Wallet"}
+                  {connected ? "Connected" : "Connect Wallet"}
                 </button>
               </li>
               {currAddress !== "0x" && (
