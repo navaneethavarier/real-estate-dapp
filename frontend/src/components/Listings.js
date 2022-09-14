@@ -64,9 +64,7 @@ export default function Listings() {
           <h2>Property Listings</h2>{" "}
         </div>
         <div className="flex mt-5 justify-between flex-wrap max-w-screen-xl text-center">
-          {data &&
-            data !== undefined &&
-            data !== null &&
+          {data && data !== undefined && data !== null ? (
             data.map((value, index) => {
               console.log("here111111", value);
               if (value !== undefined) {
@@ -74,7 +72,10 @@ export default function Listings() {
                   <ListingCard listingsdata={value} key={index}></ListingCard>
                 );
               }
-            })}
+            })
+          ) : (
+            <h1 style={{ color: "white" }}>No data available</h1>
+          )}
         </div>
       </div>
     </div>

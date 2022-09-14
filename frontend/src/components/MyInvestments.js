@@ -39,7 +39,7 @@ const MyInvestments = () => {
       ethsigner
     );
 
-    let transaction = await contract.getMyInvestments();
+    let transaction = await contract.getUserInvestments();
 
     const items = await Promise.all(
       transaction.map(async (i) => {

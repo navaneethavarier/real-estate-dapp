@@ -43,7 +43,7 @@ export default function Account() {
       ethsigner
     );
 
-    let transaction = await contract.getMyInvestments();
+    let transaction = await contract.getUserInvestments();
 
     const items = await Promise.all(
       transaction.map(async (i) => {
@@ -78,7 +78,7 @@ export default function Account() {
   }
 
   return (
-    <div>
+    <div data-testid="account-1">
       <Navbar></Navbar>
       <div className={`${css2} mt-10`}>
         <div className={`${cname}  text-white m-4`}>
@@ -101,23 +101,6 @@ export default function Account() {
           </div>
         </form>
       </div>
-      {/* <>
-        <div className={`${cname}  text-white mt-11`}>
-          <h2>Your Investments</h2>
-          <div className="flex justify-center flex-wrap max-w-screen-xl">
-            {listingsdata &&
-              listingsdata !== undefined &&
-              listingsdata.map((value, index) => {
-                return (
-                  <ListingCard listingsdata={value} key={index}></ListingCard>
-                );
-              })}
-          </div>
-          <div>
-            {listingsdata.length == 0 ? "Sorry, no data available." : ""}
-          </div>
-        </div>
-      </> */}
     </div>
   );
 }

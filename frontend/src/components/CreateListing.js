@@ -80,10 +80,10 @@ export default function CreateListing() {
       );
 
       const cost = ethers.utils.parseUnits(newListing.cost, "ether");
-      let listingPrice = await contract.getListPrice();
+      let listingPrice = await contract.getPrice();
       listingPrice = listingPrice.toString();
 
-      let transaction = await contract.createToken(metadataURL, cost, {
+      let transaction = await contract.createPropListing(metadataURL, cost, {
         value: listingPrice,
       });
       await transaction.wait();

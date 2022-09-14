@@ -130,7 +130,7 @@ const ListingDetails = (props) => {
       const salePrice = ethers.utils.parseUnits(data.price, "ether");
       updateMessage("Property purchase in progress. Please Wait (Upto 5 mins)");
       //run the executeSale function
-      let transaction = await contract.executeSale(tokenId, {
+      let transaction = await contract.propertySale(tokenId, {
         value: salePrice,
       });
       await transaction.wait();
@@ -161,7 +161,7 @@ const ListingDetails = (props) => {
 
       const price = ethers.utils.parseUnits(newSP, "ether");
 
-      let transaction = await contract.updateListPrice(data.tokenId, price);
+      let transaction = await contract.updateCost(data.tokenId, price);
       await transaction.wait();
 
       alert("Successfully updated the price of your listing!");

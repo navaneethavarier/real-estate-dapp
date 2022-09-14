@@ -39,12 +39,8 @@ contract RealEstateDapp is ERC721URIStorage {
         propowner = payable(msg.sender);
     }
 
-    function getOwner() public view returns (address) {
-        return propowner;
-    }
-
     //Function #1 - Updates info of a particular property listing whose id is passed as parameter
-    function updateListPrice(uint256 _id, uint256 _listPrice)
+    function updateCost(uint256 _id, uint256 _listPrice)
         public
         payable
         returns (bool)
@@ -54,36 +50,12 @@ contract RealEstateDapp is ERC721URIStorage {
     }
 
     //Function #2 - Fetches the price of a listing
-    function getListPrice() public view returns (uint256) {
+    function getPrice() public view returns (uint256) {
         return listPrice;
     }
 
-    //Function #3 - Fetch current token ID
-    function getLatestIdToListedToken()
-        public
-        view
-        returns (PropListing memory)
-    {
-        uint256 currentID = _allTokenID.current();
-        return propinfo[currentID];
-    }
-
-    //Function #4 - Fetch token for ID provided in parameter
-    function getListedTokenForId(uint256 id)
-        public
-        view
-        returns (PropListing memory)
-    {
-        return propinfo[id];
-    }
-
-    //Function #5 - Get token of current ID
-    function getCurrentToken() public view returns (uint256) {
-        return _allTokenID.current();
-    }
-
     //Function #6 - Function to create new token when new listing is created
-    function createToken(string memory tokenURI, uint256 price)
+    function createPropListing(string memory tokenURI, uint256 price)
         public
         payable
         returns (uint256)
@@ -95,13 +67,13 @@ contract RealEstateDapp is ERC721URIStorage {
 
         _setTokenURI(newTokenId, tokenURI);
 
-        createListedToken(newTokenId, price);
+        helper(newTokenId, price);
 
         return newTokenId;
     }
 
     //Function #7 - Supporting function for function#6
-    function createListedToken(uint256 tokenId, uint256 price) private {
+    function helper(uint256 tokenId, uint256 price) private {
         require(
             msg.value == listPrice,
             "verifying if user is sending the correct price"
@@ -125,44 +97,42 @@ contract RealEstateDapp is ERC721URIStorage {
     function getAllListings() public view returns (PropListing[] memory) {
         uint256 listingsCount = _allTokenID.current();
         PropListing[] memory tokens = new PropListing[](listingsCount);
-        uint256 currentIndex = 0;
+        uint256 k = 0;
 
         for (uint256 i = 0; i < listingsCount; i++) {
-            uint256 currentId = i + 1;
-            PropListing storage currentItem = propinfo[currentId];
-            tokens[currentIndex] = currentItem;
-            currentIndex += 1;
+            PropListing storage prop = propinfo[i + 1];
+            tokens[k] = prop;
+            k += 1;
         }
 
         return tokens;
     }
 
     //Function #9 - Fetch investments of a particular user
-    function getMyInvestments() public view returns (PropListing[] memory) {
-        uint256 totalItemCount = _allTokenID.current();
-        uint256 itemCount = 0;
-        uint256 currentIndex = 0;
+    function getUserInvestments() public view returns (PropListing[] memory) {
+        uint256 total = _allTokenID.current();
+        uint256 mylistings = 0;
+        uint256 k = 0;
 
-        for (uint256 i = 0; i < totalItemCount; i++) {
+        for (uint256 i = 0; i < total; i++) {
             if (propinfo[i + 1].seller == msg.sender) {
-                itemCount += 1;
+                mylistings += 1;
             }
         }
 
-        PropListing[] memory items = new PropListing[](itemCount);
-        for (uint256 i = 0; i < totalItemCount; i++) {
+        PropListing[] memory userprops = new PropListing[](mylistings);
+        for (uint256 i = 0; i < total; i++) {
             if (propinfo[i + 1].seller == msg.sender) {
-                uint256 currentId = i + 1;
-                PropListing storage currentItem = propinfo[currentId];
-                items[currentIndex] = currentItem;
-                currentIndex += 1;
+                PropListing storage prop = propinfo[i + 1];
+                userprops[k] = prop;
+                k += 1;
             }
         }
-        return items;
+        return userprops;
     }
 
     //Function #10 - Function to execute transfer of ownership during property sale
-    function executeSale(uint256 tokenId) public payable {
+    function propertySale(uint256 tokenId) public payable {
         uint256 price = propinfo[tokenId].price;
         address seller = propinfo[tokenId].seller;
         require(
@@ -170,7 +140,6 @@ contract RealEstateDapp is ERC721URIStorage {
             "Please pay the selling price of the property to complete transaction"
         );
 
-        // propinfo[tokenId].currListed = true;
         propinfo[tokenId].seller = payable(msg.sender);
         _solditems.increment();
 
